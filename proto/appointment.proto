@@ -1,0 +1,63 @@
+syntax = "proto3";
+
+package appointment;
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/field_mask.proto";
+
+option go_package = "github.com/folucode/appointment-scheduler/proto";
+
+service AppointmentService {
+    rpc GetAppointment (GetAppointmentRequest) returns (Appointment);
+    rpc GetUserAppointments(GetUserAppointmentRequest) returns (GetUserAppointmentResponse);
+    rpc CreateAppointment (CreateAppointmentRequest) returns (Appointment);
+    rpc UpdateAppointment (UpdateAppointmentRequest) returns (Appointment);
+    rpc DeleteAppointment (DeleteAppointmentRequest) returns (DeleteAppointmentResponse);
+}
+
+message Appointment {
+    string id = 1;
+    string user_id = 2;
+    string description = 3;
+    ContactInformation contact_information = 4;
+    google.protobuf.Timestamp start_time = 5;
+    google.protobuf.Timestamp end_time = 6;
+}
+
+message GetAppointmentRequest {
+    string id = 1;
+}
+
+message GetUserAppointmentRequest {
+    string user_id = 1;
+}
+
+message GetUserAppointmentResponse {
+    repeated Appointment appointment = 1;
+}
+
+message CreateAppointmentRequest {
+    string user_id = 1;
+    ContactInformation contact_information = 2;
+    google.protobuf.Timestamp start_time = 3;
+    google.protobuf.Timestamp end_time = 4;
+}
+
+message UpdateAppointmentRequest {
+    Appointment appointment = 1;
+    
+    google.protobuf.FieldMask update_mask = 2;
+}
+
+message DeleteAppointmentRequest {
+    string id = 1;
+}
+
+message DeleteAppointmentResponse {
+    bool success = 1;
+}
+
+message ContactInformation {
+    string name = 1;
+    string email = 2;
+}

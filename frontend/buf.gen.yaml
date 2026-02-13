@@ -1,0 +1,19 @@
+version: v2
+inputs:
+  - directory: ../proto
+plugins:
+  # Go Plugins
+  - local: protoc-gen-go
+    out: ../proto
+    opt: paths=source_relative
+  - local: protoc-gen-connect-go
+    out: ../proto
+    opt: paths=source_relative
+
+  # TypeScript Plugins
+  - local: protoc-gen-es
+    out: src/gen
+    opt: target=ts
+  - local: protoc-gen-connect-es
+    out: src/gen
+    opt: target=ts
