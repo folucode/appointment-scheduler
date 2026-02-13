@@ -1,6 +1,8 @@
 package db
 
-import "errors"
+import (
+	"errors"
+)
 
 func (db *Database) CreateAppointment(appt Appointment) error {
 	db.mu.Lock()
@@ -32,4 +34,21 @@ func (db *Database) GetAppointment(id string) (Appointment, error) {
 	}
 
 	return Appointment{}, errors.New("appointment not found")
+}
+
+func (db *Database) GetAppointments(user_id string) ([]Appointment, error) {
+	data, err := db.Read()
+	if err != nil {
+		return []Appointment{}, err
+	}
+
+	result := []Appointment{}
+
+	for _, a := range data.Appointments {
+		if a.UserID == user_id {
+			result = append(result, a)
+		}
+	}
+
+	return result, nil
 }

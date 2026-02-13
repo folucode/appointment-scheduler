@@ -55,7 +55,21 @@ function App() {
       },
     });
 
+    localStorage.setItem("userId", response.userId);
+
     setAppointment(response);
+  };
+
+  const getAppointments = async () => {
+    const userId = localStorage.getItem("userId");
+
+    if (!userId) return;
+
+    const response = await appointmentClient.getUserAppointments({
+      userId,
+    });
+
+    console.log(response);
   };
 
   return (
@@ -75,6 +89,7 @@ function App() {
         </button>
         <button onClick={getUser}>get user</button>
         <button onClick={createAppointment}>createAppointment</button>
+        <button onClick={getAppointments}>getAppointments</button>
         <p>{user ? `${user.name} (${user.email})` : "No user"}</p>
         <p>{appointment ? `${appointment}` : "Null"}</p>
         <p>
