@@ -2,34 +2,98 @@ package main
 
 import (
 	"context"
+	"errors"
 	"log"
 	"net/http"
 
+	"github.com/folucode/appointment-scheduler/internal/db"
 	pb "github.com/folucode/appointment-scheduler/proto"
 	userconnect "github.com/folucode/appointment-scheduler/proto/protoconnect"
 	"golang.org/x/net/http2"
 	"golang.org/x/net/http2/h2c"
+	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"connectrpc.com/connect"
+	"github.com/google/uuid"
 	"github.com/rs/cors"
 )
 
-type server struct{}
+type AppointmentServer struct {
+	userconnect.UnimplementedAppointmentServiceHandler
+	Storage *db.Database
+}
 
-func (s *server) GetUser(ctx context.Context, req *connect.Request[pb.GetUserRequest]) (*connect.Response[pb.GetUserResponse], error) {
-	log.Printf("Incoming Request to get user: %s", req.Msg.Id)
+type UserServer struct {
+	userconnect.UnimplementedUserServiceHandler
+	Storage *db.Database
+}
 
-	res := connect.NewResponse(&pb.GetUserResponse{
-		User: &pb.User{},
+func (s *AppointmentServer) CreateAppointment(
+	ctx context.Context,
+	req *connect.Request[pb.CreateAppointmentRequest],
+) (*connect.Response[pb.Appointment], error) {
+	log.Printf("Incoming Request to create an appointment: %+v", req.Msg)
+
+	user, err := s.Storage.FindUserByEmail(req.Msg.ContactInformation.Email)
+
+	if err != nil {
+		if !errors.Is(err, db.ErrUserNotFound) {
+			return nil, err
+		}
+
+		createdUser, err := s.Storage.CreateUser(db.User{
+			ID:    uuid.NewString(),
+			Name:  req.Msg.ContactInformation.Name,
+			Email: req.Msg.ContactInformation.Email,
+		})
+		user = &createdUser
+		log.Printf("user data created: %+v", user)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	newAppt := db.Appointment{
+		ID:          uuid.NewString(),
+		Description: req.Msg.Description,
+		UserID:      user.ID,
+		ContactInformation: db.Contact{
+			Name:  req.Msg.ContactInformation.Name,
+			Email: req.Msg.ContactInformation.Email,
+		},
+		StartTime: req.Msg.StartTime.AsTime(),
+		EndTime:   req.Msg.EndTime.AsTime(),
+	}
+
+	err = s.Storage.CreateAppointment(newAppt)
+	if err != nil {
+		return nil, err
+	}
+
+	res := connect.NewResponse(&pb.Appointment{
+		Id:          newAppt.ID,
+		Description: newAppt.Description,
+		ContactInformation: &pb.ContactInformation{
+			Name:  newAppt.ContactInformation.Name,
+			Email: newAppt.ContactInformation.Email,
+		},
+		StartTime: timestamppb.New(newAppt.StartTime),
+		EndTime:   timestamppb.New(newAppt.EndTime),
 	})
+
 	return res, nil
 }
 
 func main() {
 	mux := http.NewServeMux()
 
-	path, handler := userconnect.NewUserServiceHandler(&server{})
-	mux.Handle(path, handler)
+	database := db.NewDatabase("data/db.json")
+
+	apptPath, apptHandler := userconnect.NewAppointmentServiceHandler(&AppointmentServer{Storage: database})
+	userPath, userHandler := userconnect.NewUserServiceHandler(&UserServer{Storage: database})
+
+	mux.Handle(apptPath, apptHandler)
+	mux.Handle(userPath, userHandler)
 
 	c := cors.New(cors.Options{
 		AllowedOrigins: []string{"http://localhost:5173"},

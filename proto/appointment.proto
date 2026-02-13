@@ -41,6 +41,7 @@ message CreateAppointmentRequest {
     ContactInformation contact_information = 2;
     google.protobuf.Timestamp start_time = 3;
     google.protobuf.Timestamp end_time = 4;
+    string description = 5;
 }
 
 message UpdateAppointmentRequest {

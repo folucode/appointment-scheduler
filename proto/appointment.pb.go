@@ -245,6 +245,7 @@ type CreateAppointmentRequest struct {
 	ContactInformation *ContactInformation    `protobuf:"bytes,2,opt,name=contact_information,json=contactInformation,proto3" json:"contact_information,omitempty"`
 	StartTime          *timestamppb.Timestamp `protobuf:"bytes,3,opt,name=start_time,json=startTime,proto3" json:"start_time,omitempty"`
 	EndTime            *timestamppb.Timestamp `protobuf:"bytes,4,opt,name=end_time,json=endTime,proto3" json:"end_time,omitempty"`
+	Description        string                 `protobuf:"bytes,5,opt,name=description,proto3" json:"description,omitempty"`
 	unknownFields      protoimpl.UnknownFields
 	sizeCache          protoimpl.SizeCache
 }
@@ -305,6 +306,13 @@ func (x *CreateAppointmentRequest) GetEndTime() *timestamppb.Timestamp {
 		return x.EndTime
 	}
 	return nil
+}
+
+func (x *CreateAppointmentRequest) GetDescription() string {
+	if x != nil {
+		return x.Description
+	}
+	return ""
 }
 
 type UpdateAppointmentRequest struct {
@@ -517,13 +525,14 @@ const file_appointment_proto_rawDesc = "" +
 	"\x19GetUserAppointmentRequest\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\tR\x06userId\"X\n" +
 	"\x1aGetUserAppointmentResponse\x12:\n" +
-	"\vappointment\x18\x01 \x03(\v2\x18.appointment.AppointmentR\vappointment\"\xf7\x01\n" +
+	"\vappointment\x18\x01 \x03(\v2\x18.appointment.AppointmentR\vappointment\"\x99\x02\n" +
 	"\x18CreateAppointmentRequest\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\tR\x06userId\x12P\n" +
 	"\x13contact_information\x18\x02 \x01(\v2\x1f.appointment.ContactInformationR\x12contactInformation\x129\n" +
 	"\n" +
 	"start_time\x18\x03 \x01(\v2\x1a.google.protobuf.TimestampR\tstartTime\x125\n" +
-	"\bend_time\x18\x04 \x01(\v2\x1a.google.protobuf.TimestampR\aendTime\"\x93\x01\n" +
+	"\bend_time\x18\x04 \x01(\v2\x1a.google.protobuf.TimestampR\aendTime\x12 \n" +
+	"\vdescription\x18\x05 \x01(\tR\vdescription\"\x93\x01\n" +
 	"\x18UpdateAppointmentRequest\x12:\n" +
 	"\vappointment\x18\x01 \x01(\v2\x18.appointment.AppointmentR\vappointment\x12;\n" +
 	"\vupdate_mask\x18\x02 \x01(\v2\x1a.google.protobuf.FieldMaskR\n" +
