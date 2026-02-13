@@ -19,9 +19,6 @@ func (db *Database) CreateAppointment(appt Appointment) error {
 }
 
 func (db *Database) GetAppointment(id string) (Appointment, error) {
-	db.mu.Lock()
-	defer db.mu.Unlock()
-
 	data, err := db.Read()
 	if err != nil {
 		return Appointment{}, err
@@ -51,4 +48,31 @@ func (db *Database) GetAppointments(user_id string) ([]Appointment, error) {
 	}
 
 	return result, nil
+}
+
+func (db *Database) DeleteAppointment(id string) (bool, error) {
+	db.mu.Lock()
+	defer db.mu.Unlock()
+
+	data, err := db.read()
+	if err != nil {
+		return false, err
+	}
+
+	for i, a := range data.Appointments {
+		if a.ID == id {
+			data.Appointments = append(
+				data.Appointments[:i],
+				data.Appointments[i+1:]...,
+			)
+
+			if err := db.Save(data); err != nil {
+				return false, err
+			}
+
+			return true, nil
+		}
+	}
+
+	return false, nil
 }

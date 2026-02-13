@@ -124,6 +124,50 @@ func (s *AppointmentServer) GetUserAppointments(
 	return res, nil
 }
 
+func (s *AppointmentServer) GetAppointment(ctx context.Context, req *connect.Request[pb.GetAppointmentRequest]) (*connect.Response[pb.Appointment], error) {
+	log.Printf("Incoming Request to get user appointments: %+v", req.Msg)
+
+	if req.Msg.Id == "" {
+		return connect.NewResponse(&pb.Appointment{}), nil
+	}
+
+	data, err := s.Storage.GetAppointment(req.Msg.Id)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return connect.NewResponse(&pb.Appointment{
+		Id:          data.ID,
+		Description: data.Description,
+		StartTime:   timestamppb.New(data.StartTime),
+		EndTime:     timestamppb.New(data.EndTime),
+		ContactInformation: &pb.ContactInformation{
+			Name:  data.ContactInformation.Name,
+			Email: data.ContactInformation.Email,
+		},
+		UserId: data.UserID,
+	}), nil
+}
+
+func (s *AppointmentServer) DeleteAppointment(ctx context.Context, req *connect.Request[pb.DeleteAppointmentRequest]) (*connect.Response[pb.DeleteAppointmentResponse], error) {
+	log.Printf("Incoming Request to get user appointments: %+v", req.Msg)
+
+	if req.Msg.Id == "" {
+		return &connect.Response[pb.DeleteAppointmentResponse]{}, nil
+	}
+
+	success, err := s.Storage.DeleteAppointment(req.Msg.Id)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return connect.NewResponse(&pb.DeleteAppointmentResponse{
+		Success: success,
+	}), nil
+}
+
 func main() {
 	mux := http.NewServeMux()
 
