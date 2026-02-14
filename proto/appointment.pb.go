@@ -31,6 +31,8 @@ type Appointment struct {
 	ContactInformation *ContactInformation    `protobuf:"bytes,4,opt,name=contact_information,json=contactInformation,proto3" json:"contact_information,omitempty"`
 	StartTime          *timestamppb.Timestamp `protobuf:"bytes,5,opt,name=start_time,json=startTime,proto3" json:"start_time,omitempty"`
 	EndTime            *timestamppb.Timestamp `protobuf:"bytes,6,opt,name=end_time,json=endTime,proto3" json:"end_time,omitempty"`
+	Title              string                 `protobuf:"bytes,7,opt,name=title,proto3" json:"title,omitempty"`
+	Date               *timestamppb.Timestamp `protobuf:"bytes,8,opt,name=date,proto3" json:"date,omitempty"`
 	unknownFields      protoimpl.UnknownFields
 	sizeCache          protoimpl.SizeCache
 }
@@ -103,6 +105,20 @@ func (x *Appointment) GetStartTime() *timestamppb.Timestamp {
 func (x *Appointment) GetEndTime() *timestamppb.Timestamp {
 	if x != nil {
 		return x.EndTime
+	}
+	return nil
+}
+
+func (x *Appointment) GetTitle() string {
+	if x != nil {
+		return x.Title
+	}
+	return ""
+}
+
+func (x *Appointment) GetDate() *timestamppb.Timestamp {
+	if x != nil {
+		return x.Date
 	}
 	return nil
 }
@@ -197,7 +213,7 @@ func (x *GetUserAppointmentRequest) GetUserId() string {
 
 type GetUserAppointmentResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Appointment   []*Appointment         `protobuf:"bytes,1,rep,name=appointment,proto3" json:"appointment,omitempty"`
+	Appointments  []*Appointment         `protobuf:"bytes,1,rep,name=appointments,proto3" json:"appointments,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -232,9 +248,9 @@ func (*GetUserAppointmentResponse) Descriptor() ([]byte, []int) {
 	return file_appointment_proto_rawDescGZIP(), []int{3}
 }
 
-func (x *GetUserAppointmentResponse) GetAppointment() []*Appointment {
+func (x *GetUserAppointmentResponse) GetAppointments() []*Appointment {
 	if x != nil {
-		return x.Appointment
+		return x.Appointments
 	}
 	return nil
 }
@@ -246,6 +262,8 @@ type CreateAppointmentRequest struct {
 	StartTime          *timestamppb.Timestamp `protobuf:"bytes,3,opt,name=start_time,json=startTime,proto3" json:"start_time,omitempty"`
 	EndTime            *timestamppb.Timestamp `protobuf:"bytes,4,opt,name=end_time,json=endTime,proto3" json:"end_time,omitempty"`
 	Description        string                 `protobuf:"bytes,5,opt,name=description,proto3" json:"description,omitempty"`
+	Title              string                 `protobuf:"bytes,6,opt,name=title,proto3" json:"title,omitempty"`
+	Date               *timestamppb.Timestamp `protobuf:"bytes,7,opt,name=date,proto3" json:"date,omitempty"`
 	unknownFields      protoimpl.UnknownFields
 	sizeCache          protoimpl.SizeCache
 }
@@ -313,6 +331,20 @@ func (x *CreateAppointmentRequest) GetDescription() string {
 		return x.Description
 	}
 	return ""
+}
+
+func (x *CreateAppointmentRequest) GetTitle() string {
+	if x != nil {
+		return x.Title
+	}
+	return ""
+}
+
+func (x *CreateAppointmentRequest) GetDate() *timestamppb.Timestamp {
+	if x != nil {
+		return x.Date
+	}
+	return nil
 }
 
 type UpdateAppointmentRequest struct {
@@ -511,7 +543,7 @@ var File_appointment_proto protoreflect.FileDescriptor
 
 const file_appointment_proto_rawDesc = "" +
 	"\n" +
-	"\x11appointment.proto\x12\vappointment\x1a\x1fgoogle/protobuf/timestamp.proto\x1a google/protobuf/field_mask.proto\"\x9c\x02\n" +
+	"\x11appointment.proto\x12\vappointment\x1a\x1fgoogle/protobuf/timestamp.proto\x1a google/protobuf/field_mask.proto\"\xe2\x02\n" +
 	"\vAppointment\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x17\n" +
 	"\auser_id\x18\x02 \x01(\tR\x06userId\x12 \n" +
@@ -519,20 +551,24 @@ const file_appointment_proto_rawDesc = "" +
 	"\x13contact_information\x18\x04 \x01(\v2\x1f.appointment.ContactInformationR\x12contactInformation\x129\n" +
 	"\n" +
 	"start_time\x18\x05 \x01(\v2\x1a.google.protobuf.TimestampR\tstartTime\x125\n" +
-	"\bend_time\x18\x06 \x01(\v2\x1a.google.protobuf.TimestampR\aendTime\"'\n" +
+	"\bend_time\x18\x06 \x01(\v2\x1a.google.protobuf.TimestampR\aendTime\x12\x14\n" +
+	"\x05title\x18\a \x01(\tR\x05title\x12.\n" +
+	"\x04date\x18\b \x01(\v2\x1a.google.protobuf.TimestampR\x04date\"'\n" +
 	"\x15GetAppointmentRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\"4\n" +
 	"\x19GetUserAppointmentRequest\x12\x17\n" +
-	"\auser_id\x18\x01 \x01(\tR\x06userId\"X\n" +
-	"\x1aGetUserAppointmentResponse\x12:\n" +
-	"\vappointment\x18\x01 \x03(\v2\x18.appointment.AppointmentR\vappointment\"\x99\x02\n" +
+	"\auser_id\x18\x01 \x01(\tR\x06userId\"Z\n" +
+	"\x1aGetUserAppointmentResponse\x12<\n" +
+	"\fappointments\x18\x01 \x03(\v2\x18.appointment.AppointmentR\fappointments\"\xdf\x02\n" +
 	"\x18CreateAppointmentRequest\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\tR\x06userId\x12P\n" +
 	"\x13contact_information\x18\x02 \x01(\v2\x1f.appointment.ContactInformationR\x12contactInformation\x129\n" +
 	"\n" +
 	"start_time\x18\x03 \x01(\v2\x1a.google.protobuf.TimestampR\tstartTime\x125\n" +
 	"\bend_time\x18\x04 \x01(\v2\x1a.google.protobuf.TimestampR\aendTime\x12 \n" +
-	"\vdescription\x18\x05 \x01(\tR\vdescription\"\x93\x01\n" +
+	"\vdescription\x18\x05 \x01(\tR\vdescription\x12\x14\n" +
+	"\x05title\x18\x06 \x01(\tR\x05title\x12.\n" +
+	"\x04date\x18\a \x01(\v2\x1a.google.protobuf.TimestampR\x04date\"\x93\x01\n" +
 	"\x18UpdateAppointmentRequest\x12:\n" +
 	"\vappointment\x18\x01 \x01(\v2\x18.appointment.AppointmentR\vappointment\x12;\n" +
 	"\vupdate_mask\x18\x02 \x01(\v2\x1a.google.protobuf.FieldMaskR\n" +
@@ -581,27 +617,29 @@ var file_appointment_proto_depIdxs = []int32{
 	8,  // 0: appointment.Appointment.contact_information:type_name -> appointment.ContactInformation
 	9,  // 1: appointment.Appointment.start_time:type_name -> google.protobuf.Timestamp
 	9,  // 2: appointment.Appointment.end_time:type_name -> google.protobuf.Timestamp
-	0,  // 3: appointment.GetUserAppointmentResponse.appointment:type_name -> appointment.Appointment
-	8,  // 4: appointment.CreateAppointmentRequest.contact_information:type_name -> appointment.ContactInformation
-	9,  // 5: appointment.CreateAppointmentRequest.start_time:type_name -> google.protobuf.Timestamp
-	9,  // 6: appointment.CreateAppointmentRequest.end_time:type_name -> google.protobuf.Timestamp
-	0,  // 7: appointment.UpdateAppointmentRequest.appointment:type_name -> appointment.Appointment
-	10, // 8: appointment.UpdateAppointmentRequest.update_mask:type_name -> google.protobuf.FieldMask
-	1,  // 9: appointment.AppointmentService.GetAppointment:input_type -> appointment.GetAppointmentRequest
-	2,  // 10: appointment.AppointmentService.GetUserAppointments:input_type -> appointment.GetUserAppointmentRequest
-	4,  // 11: appointment.AppointmentService.CreateAppointment:input_type -> appointment.CreateAppointmentRequest
-	5,  // 12: appointment.AppointmentService.UpdateAppointment:input_type -> appointment.UpdateAppointmentRequest
-	6,  // 13: appointment.AppointmentService.DeleteAppointment:input_type -> appointment.DeleteAppointmentRequest
-	0,  // 14: appointment.AppointmentService.GetAppointment:output_type -> appointment.Appointment
-	3,  // 15: appointment.AppointmentService.GetUserAppointments:output_type -> appointment.GetUserAppointmentResponse
-	0,  // 16: appointment.AppointmentService.CreateAppointment:output_type -> appointment.Appointment
-	0,  // 17: appointment.AppointmentService.UpdateAppointment:output_type -> appointment.Appointment
-	7,  // 18: appointment.AppointmentService.DeleteAppointment:output_type -> appointment.DeleteAppointmentResponse
-	14, // [14:19] is the sub-list for method output_type
-	9,  // [9:14] is the sub-list for method input_type
-	9,  // [9:9] is the sub-list for extension type_name
-	9,  // [9:9] is the sub-list for extension extendee
-	0,  // [0:9] is the sub-list for field type_name
+	9,  // 3: appointment.Appointment.date:type_name -> google.protobuf.Timestamp
+	0,  // 4: appointment.GetUserAppointmentResponse.appointments:type_name -> appointment.Appointment
+	8,  // 5: appointment.CreateAppointmentRequest.contact_information:type_name -> appointment.ContactInformation
+	9,  // 6: appointment.CreateAppointmentRequest.start_time:type_name -> google.protobuf.Timestamp
+	9,  // 7: appointment.CreateAppointmentRequest.end_time:type_name -> google.protobuf.Timestamp
+	9,  // 8: appointment.CreateAppointmentRequest.date:type_name -> google.protobuf.Timestamp
+	0,  // 9: appointment.UpdateAppointmentRequest.appointment:type_name -> appointment.Appointment
+	10, // 10: appointment.UpdateAppointmentRequest.update_mask:type_name -> google.protobuf.FieldMask
+	1,  // 11: appointment.AppointmentService.GetAppointment:input_type -> appointment.GetAppointmentRequest
+	2,  // 12: appointment.AppointmentService.GetUserAppointments:input_type -> appointment.GetUserAppointmentRequest
+	4,  // 13: appointment.AppointmentService.CreateAppointment:input_type -> appointment.CreateAppointmentRequest
+	5,  // 14: appointment.AppointmentService.UpdateAppointment:input_type -> appointment.UpdateAppointmentRequest
+	6,  // 15: appointment.AppointmentService.DeleteAppointment:input_type -> appointment.DeleteAppointmentRequest
+	0,  // 16: appointment.AppointmentService.GetAppointment:output_type -> appointment.Appointment
+	3,  // 17: appointment.AppointmentService.GetUserAppointments:output_type -> appointment.GetUserAppointmentResponse
+	0,  // 18: appointment.AppointmentService.CreateAppointment:output_type -> appointment.Appointment
+	0,  // 19: appointment.AppointmentService.UpdateAppointment:output_type -> appointment.Appointment
+	7,  // 20: appointment.AppointmentService.DeleteAppointment:output_type -> appointment.DeleteAppointmentResponse
+	16, // [16:21] is the sub-list for method output_type
+	11, // [11:16] is the sub-list for method input_type
+	11, // [11:11] is the sub-list for extension type_name
+	11, // [11:11] is the sub-list for extension extendee
+	0,  // [0:11] is the sub-list for field type_name
 }
 
 func init() { file_appointment_proto_init() }

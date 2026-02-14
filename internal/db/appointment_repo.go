@@ -1,78 +1,138 @@
 package db
 
 import (
+	"context"
 	"errors"
+	"fmt"
+	"time"
+
+	pb "github.com/folucode/appointment-scheduler/proto"
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-func (db *Database) CreateAppointment(appt Appointment) error {
-	db.mu.Lock()
-	defer db.mu.Unlock()
+func (db *Database) CreateAppointment(ctx context.Context, appt *pb.Appointment) error {
+	query := `
+        INSERT INTO appointments (id, user_id, contact_name, contact_email, start_time, end_time, title, description, date)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`
 
-	data, err := db.read()
+	_, err := db.Pool.Exec(ctx, query,
+		appt.Id,
+		appt.UserId,
+		appt.ContactInformation.Name,
+		appt.ContactInformation.Email,
+		appt.StartTime.AsTime(),
+		appt.EndTime.AsTime(),
+		appt.Title,
+		appt.Description,
+		appt.Date.AsTime(),
+	)
+
 	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) {
+			if pgErr.Code == "23P01" {
+				return errors.New("conflict: this time slot overlaps with an existing appointment")
+			}
+		}
 		return err
 	}
 
-	data.Appointments = append(data.Appointments, appt)
-
-	return db.save(data)
+	return nil
 }
 
-func (db *Database) GetAppointment(id string) (Appointment, error) {
-	data, err := db.Read()
+func (db *Database) GetAppointment(ctx context.Context, id string) (*pb.Appointment, error) {
+	query := `
+		SELECT id, user_id, title, description, date, contact_name, contact_email, start_time, end_time 
+		FROM appointments WHERE id = $1`
+
+	var appt pb.Appointment
+	var contact pb.ContactInformation
+	var date, start, end time.Time
+
+	err := db.Pool.QueryRow(ctx, query, id).Scan(
+		&appt.Id,
+		&appt.UserId,
+		&appt.Title,
+		&appt.Description,
+		&contact.Name,
+		&contact.Email,
+		&date,
+		&start,
+		&end,
+	)
+
 	if err != nil {
-		return Appointment{}, err
-	}
-
-	for _, a := range data.Appointments {
-		if a.ID == id {
-			return a, nil
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, errors.New("appointment not found")
 		}
+		return nil, err
 	}
 
-	return Appointment{}, errors.New("appointment not found")
+	appt.ContactInformation = &contact
+	appt.StartTime = timestamppb.New(start)
+	appt.EndTime = timestamppb.New(end)
+	appt.Date = timestamppb.New(date)
+
+	return &appt, nil
 }
 
-func (db *Database) GetAppointments(user_id string) ([]Appointment, error) {
-	data, err := db.Read()
+func (db *Database) GetAppointments(ctx context.Context, userId string) ([]*pb.Appointment, error) {
+	query := `
+        SELECT id, user_id, contact_name, contact_email, start_time, end_time, date, title, description 
+        FROM appointments WHERE user_id = $1`
+
+	rows, err := db.Pool.Query(ctx, query, userId)
 	if err != nil {
-		return []Appointment{}, err
+		return nil, err
+	}
+	defer rows.Close()
+
+	var result []*pb.Appointment
+	for rows.Next() {
+		var a pb.Appointment
+		var c pb.ContactInformation
+		var start, end, date time.Time
+
+		err := rows.Scan(
+			&a.Id,
+			&a.UserId,
+			&c.Name,
+			&c.Email,
+			&start,
+			&end,
+			&date,
+			&a.Description,
+			&a.Title,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("error scanning row: %w", err)
+		}
+
+		a.ContactInformation = &c
+
+		a.StartTime = timestamppb.New(start)
+		a.EndTime = timestamppb.New(end)
+		a.Date = timestamppb.New(date)
+
+		result = append(result, &a)
 	}
 
-	result := []Appointment{}
-
-	for _, a := range data.Appointments {
-		if a.UserID == user_id {
-			result = append(result, a)
-		}
+	if err = rows.Err(); err != nil {
+		return nil, err
 	}
 
 	return result, nil
 }
 
-func (db *Database) DeleteAppointment(id string) (bool, error) {
-	db.mu.Lock()
-	defer db.mu.Unlock()
+func (db *Database) DeleteAppointment(ctx context.Context, id string) (bool, error) {
+	query := `DELETE FROM appointments WHERE id = $1`
 
-	data, err := db.read()
+	commandTag, err := db.Pool.Exec(ctx, query, id)
 	if err != nil {
 		return false, err
 	}
 
-	for i, a := range data.Appointments {
-		if a.ID == id {
-			data.Appointments = append(
-				data.Appointments[:i],
-				data.Appointments[i+1:]...,
-			)
-
-			if err := db.Save(data); err != nil {
-				return false, err
-			}
-
-			return true, nil
-		}
-	}
-
-	return false, nil
+	return commandTag.RowsAffected() > 0, nil
 }

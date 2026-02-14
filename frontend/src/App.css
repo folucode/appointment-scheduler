@@ -1,42 +1,142 @@
-#root {
-  max-width: 1280px;
+:root {
+  --bg-color: #f8f9fa;
+  --card-bg: #ffffff;
+  --primary-blue: #7199cf;
+  --action-green: #c8e6c9;
+  --text-main: #4a4a4a;
+  --border-color: #e0e0e0;
+}
+
+body {
+  margin: 0;
+  background-color: var(--bg-color);
+  font-family: "Segoe UI", Roboto, sans-serif;
+  color: var(--text-main);
+  padding: 0;
+}
+
+.dashboard-container {
+  padding: 40px;
   margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
-}
-
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
+.grid-layout {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
 }
 
 .card {
-  padding: 2em;
+  background: var(--card-bg);
+  padding: 25px;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+  min-height: 600px;
 }
 
-.read-the-docs {
+h3 {
+  font-size: 0.9rem;
+  letter-spacing: 1px;
+  text-align: center;
+  margin-bottom: 30px;
+  color: #555;
+}
+
+/* Forms & Inputs */
+.input-group {
+  display: flex;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.input-group label {
+  flex: 1;
+  font-size: 0.85rem;
   color: #888;
+}
+
+input,
+select,
+textarea {
+  flex: 2;
+  padding: 8px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  outline: none;
+}
+
+.btn-primary {
+  width: 100%;
+  padding: 12px;
+  background-color: var(--primary-blue);
+  color: white;
+  border: none;
+  border-radius: 20px;
+  margin-top: 20px;
+  cursor: pointer;
+}
+
+.btn-action {
+  width: 100%;
+  padding: 12px;
+  background-color: var(--action-green);
+  border: none;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  font-weight: bold;
+  color: #444;
+  cursor: pointer;
+}
+
+.schedule-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.schedule-item {
+  padding: 15px;
+  border: 1.5px solid #d1e3f8;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+}
+
+.schedule-item.selected {
+  border-color: var(--primary-blue);
+  background-color: #f0f7ff;
+}
+
+.schedule-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  text-align: left;
+}
+
+.date-text {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #999;
+  text-transform: uppercase;
+}
+
+.time-text {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #333;
+}
+
+.title-text {
+  font-size: 0.85rem;
+  color: #666;
+  margin-top: 2px;
+}
+.user-tag {
+  position: absolute;
+  bottom: 10px;
+  right: 15px;
+  font-size: 0.75rem;
+  color: #666;
 }

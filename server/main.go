@@ -5,13 +5,13 @@ import (
 	"errors"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/folucode/appointment-scheduler/internal/db"
 	pb "github.com/folucode/appointment-scheduler/proto"
 	protoconnect "github.com/folucode/appointment-scheduler/proto/protoconnect"
 	"golang.org/x/net/http2"
 	"golang.org/x/net/http2/h2c"
-	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"connectrpc.com/connect"
 	"github.com/google/uuid"
@@ -34,55 +34,46 @@ func (s *AppointmentServer) CreateAppointment(
 ) (*connect.Response[pb.Appointment], error) {
 	log.Printf("Incoming Request to create an appointment: %+v", req.Msg)
 
-	user, err := s.Storage.FindUserByEmail(req.Msg.ContactInformation.Email)
+	user, err := s.Storage.FindUserByEmail(ctx, req.Msg.ContactInformation.Email)
 
 	if err != nil {
 		if !errors.Is(err, db.ErrUserNotFound) {
 			return nil, err
 		}
 
-		createdUser, err := s.Storage.CreateUser(db.User{
-			ID:    uuid.NewString(),
+		createdUser, err := s.Storage.CreateUser(ctx, &pb.User{
+			Id:    uuid.NewString(),
 			Name:  req.Msg.ContactInformation.Name,
 			Email: req.Msg.ContactInformation.Email,
 		})
-		user = &createdUser
-		log.Printf("user data created: %+v", user)
+
 		if err != nil {
 			return nil, err
 		}
+
+		user = createdUser
 	}
 
-	newAppt := db.Appointment{
-		ID:          uuid.NewString(),
+	newAppt := &pb.Appointment{
+		Id:          uuid.NewString(),
 		Description: req.Msg.Description,
-		UserID:      user.ID,
-		ContactInformation: db.Contact{
+		UserId:      user.Id,
+		ContactInformation: &pb.ContactInformation{
 			Name:  req.Msg.ContactInformation.Name,
 			Email: req.Msg.ContactInformation.Email,
 		},
-		StartTime: req.Msg.StartTime.AsTime(),
-		EndTime:   req.Msg.EndTime.AsTime(),
+		StartTime: req.Msg.StartTime,
+		EndTime:   req.Msg.EndTime,
 	}
 
-	err = s.Storage.CreateAppointment(newAppt)
+	err = s.Storage.CreateAppointment(ctx, newAppt)
+
 	if err != nil {
-		return nil, err
+		log.Printf("Error saving to database: %v", err)
+		return nil, connect.NewError(connect.CodeInternal, errors.New("failed to save appointment"))
 	}
 
-	res := connect.NewResponse(&pb.Appointment{
-		Id:          newAppt.ID,
-		Description: newAppt.Description,
-		UserId:      newAppt.UserID,
-		ContactInformation: &pb.ContactInformation{
-			Name:  newAppt.ContactInformation.Name,
-			Email: newAppt.ContactInformation.Email,
-		},
-		StartTime: timestamppb.New(newAppt.StartTime),
-		EndTime:   timestamppb.New(newAppt.EndTime),
-	})
-
-	return res, nil
+	return connect.NewResponse(newAppt), nil
 }
 
 func (s *AppointmentServer) GetUserAppointments(
@@ -93,85 +84,58 @@ func (s *AppointmentServer) GetUserAppointments(
 
 	if req.Msg.UserId == "" {
 		return connect.NewResponse(&pb.GetUserAppointmentResponse{
-			Appointment: []*pb.Appointment{},
-		}), nil
+			Appointments: []*pb.Appointment{},
+		}), errors.New("user ID not supplied")
 	}
 
-	data, err := s.Storage.GetAppointments(req.Msg.UserId)
+	data, err := s.Storage.GetAppointments(ctx, req.Msg.UserId)
 	if err != nil {
 		return nil, err
 	}
 
-	result := []*pb.Appointment{}
-
-	for _, appt := range data {
-		result = append(result, &pb.Appointment{
-			Id:          appt.ID,
-			Description: appt.Description,
-			ContactInformation: &pb.ContactInformation{
-				Name:  appt.ContactInformation.Name,
-				Email: appt.ContactInformation.Email,
-			},
-			StartTime: timestamppb.New(appt.StartTime),
-			EndTime:   timestamppb.New(appt.EndTime),
-		})
-	}
-
 	res := connect.NewResponse(&pb.GetUserAppointmentResponse{
-		Appointment: result,
+		Appointments: data,
 	})
 
 	return res, nil
 }
 
-func (s *AppointmentServer) GetAppointment(ctx context.Context, req *connect.Request[pb.GetAppointmentRequest]) (*connect.Response[pb.Appointment], error) {
-	log.Printf("Incoming Request to get user appointments: %+v", req.Msg)
+// func (s *AppointmentServer) DeleteAppointment(ctx context.Context, req *connect.Request[pb.DeleteAppointmentRequest]) (*connect.Response[pb.DeleteAppointmentResponse], error) {
+// 	log.Printf("Incoming Request to get user appointments: %+v", req.Msg)
 
-	if req.Msg.Id == "" {
-		return connect.NewResponse(&pb.Appointment{}), nil
-	}
+// 	if req.Msg.Id == "" {
+// 		return &connect.Response[pb.DeleteAppointmentResponse]{}, nil
+// 	}
 
-	data, err := s.Storage.GetAppointment(req.Msg.Id)
+// 	success, err := s.Storage.DeleteAppointment(req.Msg.Id)
 
-	if err != nil {
-		return nil, err
-	}
+// 	if err != nil {
+// 		return nil, err
+// 	}
 
-	return connect.NewResponse(&pb.Appointment{
-		Id:          data.ID,
-		Description: data.Description,
-		StartTime:   timestamppb.New(data.StartTime),
-		EndTime:     timestamppb.New(data.EndTime),
-		ContactInformation: &pb.ContactInformation{
-			Name:  data.ContactInformation.Name,
-			Email: data.ContactInformation.Email,
-		},
-		UserId: data.UserID,
-	}), nil
-}
-
-func (s *AppointmentServer) DeleteAppointment(ctx context.Context, req *connect.Request[pb.DeleteAppointmentRequest]) (*connect.Response[pb.DeleteAppointmentResponse], error) {
-	log.Printf("Incoming Request to get user appointments: %+v", req.Msg)
-
-	if req.Msg.Id == "" {
-		return &connect.Response[pb.DeleteAppointmentResponse]{}, nil
-	}
-
-	success, err := s.Storage.DeleteAppointment(req.Msg.Id)
-
-	if err != nil {
-		return nil, err
-	}
-
-	return connect.NewResponse(&pb.DeleteAppointmentResponse{
-		Success: success,
-	}), nil
-}
+// 	return connect.NewResponse(&pb.DeleteAppointmentResponse{
+// 		Success: success,
+// 	}), nil
+// }
 
 func main() {
+	connString := os.Getenv("DATABASE_URL")
+	if connString == "" {
+		log.Fatal("DATABASE_URL not set")
+	}
+
+	log.Println("Running database migrations...")
+
+	err := db.RunMigrations(connString)
+	if err != nil {
+		log.Fatalf("Could not run migrations: %v", err)
+	}
 	mux := http.NewServeMux()
 
-	database := db.NewDatabase("data/db.json")
+	database, err := db.NewDatabase(context.Background(), connString)
+	if err != nil {
+		log.Fatalf("Could not connect to database: %v", err)
+	}
 
 	apptPath, apptHandler := protoconnect.NewAppointmentServiceHandler(&AppointmentServer{Storage: database})
 	userPath, userHandler := protoconnect.NewUserServiceHandler(&UserServer{Storage: database})
@@ -193,9 +157,9 @@ func main() {
 	addr := ":8080"
 	log.Printf("Server is listening on %s...", addr)
 
-	err := http.ListenAndServe(addr, h2c.NewHandler(c.Handler(mux), &http2.Server{}))
+	httpErr := http.ListenAndServe(addr, h2c.NewHandler(c.Handler(mux), &http2.Server{}))
 
-	if err != nil {
+	if httpErr != nil {
 		log.Fatalf("Failed to serve: %v", err)
 	}
 

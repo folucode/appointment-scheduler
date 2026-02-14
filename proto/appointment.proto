@@ -22,6 +22,8 @@ message Appointment {
     ContactInformation contact_information = 4;
     google.protobuf.Timestamp start_time = 5;
     google.protobuf.Timestamp end_time = 6;
+    string title = 7;
+    google.protobuf.Timestamp date = 8;
 }
 
 message GetAppointmentRequest {
@@ -33,7 +35,7 @@ message GetUserAppointmentRequest {
 }
 
 message GetUserAppointmentResponse {
-    repeated Appointment appointment = 1;
+    repeated Appointment appointments = 1;
 }
 
 message CreateAppointmentRequest {
@@ -42,6 +44,8 @@ message CreateAppointmentRequest {
     google.protobuf.Timestamp start_time = 3;
     google.protobuf.Timestamp end_time = 4;
     string description = 5;
+    string title = 6;
+    google.protobuf.Timestamp date = 7;
 }
 
 message UpdateAppointmentRequest {
