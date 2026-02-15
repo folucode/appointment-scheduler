@@ -44,8 +44,9 @@ func (db *Database) CreateAppointment(ctx context.Context, appt *pb.Appointment)
 
 func (db *Database) GetAppointment(ctx context.Context, id string) (*pb.Appointment, error) {
 	query := `
-		SELECT id, user_id, title, description, date, contact_name, contact_email, start_time, end_time 
-		FROM appointments WHERE id = $1`
+	SELECT id, user_id, title, description, date, contact_name, contact_email, start_time, end_time
+	FROM appointments 
+	WHERE id = $1 AND deleted_at IS NULL`
 
 	var appt pb.Appointment
 	var contact pb.ContactInformation
@@ -81,7 +82,7 @@ func (db *Database) GetAppointment(ctx context.Context, id string) (*pb.Appointm
 func (db *Database) GetAppointments(ctx context.Context, userId string) ([]*pb.Appointment, error) {
 	query := `
         SELECT id, user_id, contact_name, contact_email, start_time, end_time, date, title, description 
-        FROM appointments WHERE user_id = $1`
+        FROM appointments WHERE user_id = $1 AND deleted_at IS NULL`
 
 	rows, err := db.Pool.Query(ctx, query, userId)
 	if err != nil {
@@ -127,7 +128,7 @@ func (db *Database) GetAppointments(ctx context.Context, userId string) ([]*pb.A
 }
 
 func (db *Database) DeleteAppointment(ctx context.Context, id string) (bool, error) {
-	query := `DELETE FROM appointments WHERE id = $1`
+	query := `UPDATE appointments SET deleted_at = NOW() WHERE id = $1 AND deleted_at IS NULL`
 
 	commandTag, err := db.Pool.Exec(ctx, query, id)
 	if err != nil {

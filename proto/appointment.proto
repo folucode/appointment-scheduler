@@ -24,6 +24,7 @@ message Appointment {
     google.protobuf.Timestamp end_time = 6;
     string title = 7;
     google.protobuf.Timestamp date = 8;
+    google.protobuf.Timestamp deleted_at = 9;
 }
 
 message GetAppointmentRequest {
