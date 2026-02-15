@@ -56,9 +56,9 @@ func (db *Database) GetAppointment(ctx context.Context, id string) (*pb.Appointm
 		&appt.UserId,
 		&appt.Title,
 		&appt.Description,
+		&date,
 		&contact.Name,
 		&contact.Email,
-		&date,
 		&start,
 		&end,
 	)

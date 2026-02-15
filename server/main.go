@@ -61,7 +61,7 @@ func (s *AppointmentServer) CreateAppointment(
 
 	if err != nil {
 		log.Printf("Error saving to database: %v", err)
-		return nil, connect.NewError(connect.CodeInternal, errors.New("failed to save appointment"))
+		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
 	return connect.NewResponse(newAppt), nil
@@ -151,7 +151,7 @@ func main() {
 	httpErr := http.ListenAndServe(addr, h2c.NewHandler(c.Handler(mux), &http2.Server{}))
 
 	if httpErr != nil {
-		log.Fatalf("Failed to serve: %v", err)
+		log.Fatalf("Failed to serve: %v", httpErr)
 	}
 
 }
