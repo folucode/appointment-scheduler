@@ -18,13 +18,11 @@ type Database struct {
 }
 
 func NewDatabase(ctx context.Context, connString string) (*Database, error) {
-	// connString example: "postgres://user:password@localhost:5432/scheduler"
 	pool, err := pgxpool.New(ctx, connString)
 	if err != nil {
 		return nil, fmt.Errorf("unable to connect to database: %v", err)
 	}
 
-	// Verify connection
 	if err := pool.Ping(ctx); err != nil {
 		return nil, err
 	}
@@ -33,7 +31,6 @@ func NewDatabase(ctx context.Context, connString string) (*Database, error) {
 }
 
 func RunMigrations(connString string) error {
-	// "file://migrations" points to your folder of .sql files
 	m, err := migrate.New("file://migrations", connString)
 	if err != nil {
 		return err

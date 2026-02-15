@@ -28,7 +28,10 @@ export const AppointmentDetails = ({
         <div className="detail-meta">
           <strong>Time:</strong>{" "}
           {appointment.startTime &&
-            timestampDate(appointment.startTime).toLocaleString()}
+            timestampDate(appointment.startTime).toLocaleString()}{" "}
+          -{" "}
+          {appointment.endTime &&
+            timestampDate(appointment.endTime).toLocaleString()}
         </div>
 
         <div className="detail-meta">

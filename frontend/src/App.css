@@ -171,3 +171,12 @@ textarea {
   animation: rotation 1s linear infinite;
   margin-bottom: 0.5rem;
 }
+
+.detail-meta {
+  font-size: 0.9rem;
+  color: #4b5563;
+  padding: 0.5rem;
+  background: #f9fafb;
+  border-radius: 4px;
+  margin: 5px 0;
+}
