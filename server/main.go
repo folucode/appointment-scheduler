@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/folucode/appointment-scheduler/internal/db"
 	pb "github.com/folucode/appointment-scheduler/proto"
@@ -34,6 +35,10 @@ func (s *AppointmentServer) CreateAppointment(
 	req *connect.Request[pb.CreateAppointmentRequest],
 ) (*connect.Response[pb.Appointment], error) {
 	log.Printf("Incoming Request to create an appointment: %+v", req.Msg)
+
+	if req.Msg.Date.AsTime().Before(time.Now()) {
+		return nil, connect.NewError(connect.CodeInternal, errors.New("Date cannot be in the past"))
+	}
 
 	user, err := s.Storage.CreateUser(ctx, &pb.User{
 		Id:    uuid.NewString(),
