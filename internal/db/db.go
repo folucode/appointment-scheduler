@@ -34,7 +34,7 @@ func NewDatabase(ctx context.Context, connString string) (*Database, error) {
 
 func RunMigrations(connString string) error {
 	// "file://migrations" points to your folder of .sql files
-	m, err := migrate.New("file://internal/migrations", connString)
+	m, err := migrate.New("file://migrations", connString)
 	if err != nil {
 		return err
 	}

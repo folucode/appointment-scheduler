@@ -11,7 +11,7 @@ import { AppointmentDetails } from "./components/AppointmentDetails";
 import { AppointmentList } from "./components/AppointmentList";
 
 const transport: Transport = createConnectTransport({
-  baseUrl: "http://localhost:8080",
+  baseUrl: import.meta.env.VITE_API_BASE_URL || "http://localhost:8080",
 });
 
 const appointmentClient = createClient(AppointmentService, transport);

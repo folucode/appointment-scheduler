@@ -13,31 +13,16 @@ Appointment Scheduling App
 
 ## Getting Started
 
-### 1. Database Setup
-
-1. Create a new file named `docker-compose.yml`.
-2. Copy the contents from `docker-compose.example.yml` into your new file.
-3. Update the database credentials (username, password, etc.).
-4. Start the database container:
-   ```bash
-        docker compose up -d
-   ```
-
-### 2. Environment Configuration
+### 1. Environment Configuration
 
 1. Create a `.env` file in the root directory.
-2. Open `.env` and update the connection string to match your Docker DB settings.
+2. Open `.env` and copy the variables in the `.env.example` file and adjust the credentials to match your prosgres credentials.
 
 ### 3. Running the Go Service
 
-1. Download dependencies: `go mod download`.
-2. Start the application: `go run server/main.go`.
+1. Run this command to build and start all services: `docker compose up --build`
 
-The Go service should now be running locally!
+* [Frontend:](http://localhost:5173)
+* [Backend API:](http://localhost:8080)
 
-### 4. Install Frontend Dependencies
-
-1. In the frontend directory, run `npm i` to install the dependencies.
-2. Start the application by running `npm run dev`.
-
-The frontend service should now be running locally!
+The services should now be running locally!
