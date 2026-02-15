@@ -18,11 +18,9 @@ Appointment Scheduling App
 1. Create a `.env` file in the root directory.
 2. Open `.env` and copy the variables in the `.env.example` file and adjust the credentials to match your prosgres credentials.
 
-### 3. Running the Go Service
+### 2. Running the Services
 
 1. Run this command to build and start all services: `docker compose up --build`
 
-* [Frontend:](http://localhost:5173)
-* [Backend API:](http://localhost:8080)
-
-The services should now be running locally!
+* [Frontend](http://localhost:5173)
+* [Backend](http://localhost:8080)
