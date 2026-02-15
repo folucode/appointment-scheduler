@@ -95,6 +95,18 @@ const App = () => {
     }
   };
 
+  const handleDeleteAppointment = async () => {
+    try {
+      await appointmentClient.deleteAppointment({
+        id: selectedAppointmentId,
+      });
+
+      await handleFetchAppointments();
+    } catch (err) {
+      console.error("Failed to book appointment:", err);
+    }
+  };
+
   useEffect(() => {
     handleFetchAppointments();
   }, []);
@@ -248,7 +260,12 @@ const App = () => {
                   timestampDate(selectedAppointment.startTime).toLocaleString()}
               </span>
               <div className="action-buttons">
-                <button className="btn-action cancel">CANCEL</button>
+                <button
+                  className="btn-action cancel"
+                  onClick={handleDeleteAppointment}
+                >
+                  CANCEL
+                </button>
               </div>
             </>
           ) : (

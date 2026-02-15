@@ -10,6 +10,7 @@ import (
 	"github.com/folucode/appointment-scheduler/internal/db"
 	pb "github.com/folucode/appointment-scheduler/proto"
 	protoconnect "github.com/folucode/appointment-scheduler/proto/protoconnect"
+	"github.com/joho/godotenv"
 	"golang.org/x/net/http2"
 	"golang.org/x/net/http2/h2c"
 
@@ -110,6 +111,10 @@ func (s *AppointmentServer) DeleteAppointment(ctx context.Context, req *connect.
 }
 
 func main() {
+	if err := godotenv.Load(); err != nil {
+		log.Println("No .env file found")
+	}
+
 	connString := os.Getenv("DATABASE_URL")
 	if connString == "" {
 		log.Fatal("DATABASE_URL not set")
