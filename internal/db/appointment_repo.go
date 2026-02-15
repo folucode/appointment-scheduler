@@ -103,8 +103,8 @@ func (db *Database) GetAppointments(ctx context.Context, userId string) ([]*pb.A
 			&start,
 			&end,
 			&date,
-			&a.Description,
 			&a.Title,
+			&a.Description,
 		)
 		if err != nil {
 			return nil, fmt.Errorf("error scanning row: %w", err)

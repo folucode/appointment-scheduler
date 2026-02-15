@@ -100,23 +100,23 @@ func (s *AppointmentServer) GetUserAppointments(
 	return res, nil
 }
 
-// func (s *AppointmentServer) DeleteAppointment(ctx context.Context, req *connect.Request[pb.DeleteAppointmentRequest]) (*connect.Response[pb.DeleteAppointmentResponse], error) {
-// 	log.Printf("Incoming Request to get user appointments: %+v", req.Msg)
+func (s *AppointmentServer) DeleteAppointment(ctx context.Context, req *connect.Request[pb.DeleteAppointmentRequest]) (*connect.Response[pb.DeleteAppointmentResponse], error) {
+	log.Printf("Incoming Request to delete user appointment: %+v", req.Msg)
 
-// 	if req.Msg.Id == "" {
-// 		return &connect.Response[pb.DeleteAppointmentResponse]{}, nil
-// 	}
+	if req.Msg.Id == "" {
+		return &connect.Response[pb.DeleteAppointmentResponse]{}, nil
+	}
 
-// 	success, err := s.Storage.DeleteAppointment(req.Msg.Id)
+	success, err := s.Storage.DeleteAppointment(ctx, req.Msg.Id)
 
-// 	if err != nil {
-// 		return nil, err
-// 	}
+	if err != nil {
+		return nil, err
+	}
 
-// 	return connect.NewResponse(&pb.DeleteAppointmentResponse{
-// 		Success: success,
-// 	}), nil
-// }
+	return connect.NewResponse(&pb.DeleteAppointmentResponse{
+		Success: success,
+	}), nil
+}
 
 func main() {
 	connString := os.Getenv("DATABASE_URL")
