@@ -1,8 +1,7 @@
 CREATE EXTENSION IF NOT EXISTS btree_gist;
 
 ALTER TABLE appointments 
-ADD CONSTRAINT no_overlapping_appointments 
+ADD CONSTRAINT no_overlapping_globally
 EXCLUDE USING gist (
-    user_id WITH =,
-    tstzrange(start_time, end_time) WITH &&
+    tsrange(start_time, end_time) WITH &&
 );
