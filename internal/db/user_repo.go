@@ -31,10 +31,7 @@ func (db *Database) FindUserByEmail(ctx context.Context, email string) (*pb.User
 }
 
 func (db *Database) CreateUser(ctx context.Context, user *pb.User) (*pb.User, error) {
-	query := `
-        INSERT INTO users (id, name, email) 
-        VALUES ($1, $2, $3) 
-        RETURNING id, name, email`
+	query := `INSERT INTO users (id, name, email) VALUES ($1, $2, $3) ON CONFLICT (email) DO UPDATE SET name = EXCLUDED.name RETURNING id, name, email`
 
 	var createdUser pb.User
 

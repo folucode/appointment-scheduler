@@ -34,24 +34,15 @@ func (s *AppointmentServer) CreateAppointment(
 ) (*connect.Response[pb.Appointment], error) {
 	log.Printf("Incoming Request to create an appointment: %+v", req.Msg)
 
-	user, err := s.Storage.FindUserByEmail(ctx, req.Msg.ContactInformation.Email)
+	user, err := s.Storage.CreateUser(ctx, &pb.User{
+		Id:    uuid.NewString(),
+		Name:  req.Msg.ContactInformation.Name,
+		Email: req.Msg.ContactInformation.Email,
+	})
 
 	if err != nil {
-		if !errors.Is(err, db.ErrUserNotFound) {
-			return nil, err
-		}
-
-		createdUser, err := s.Storage.CreateUser(ctx, &pb.User{
-			Id:    uuid.NewString(),
-			Name:  req.Msg.ContactInformation.Name,
-			Email: req.Msg.ContactInformation.Email,
-		})
-
-		if err != nil {
-			return nil, err
-		}
-
-		user = createdUser
+		log.Printf("Error creating user: %v", err)
+		return nil, connect.NewError(connect.CodeInternal, errors.New("failed to process user information"))
 	}
 
 	newAppt := &pb.Appointment{
