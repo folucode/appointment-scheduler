@@ -36,8 +36,14 @@ func (s *AppointmentServer) CreateAppointment(
 ) (*connect.Response[pb.Appointment], error) {
 	log.Printf("Incoming Request to create an appointment: %+v", req.Msg)
 
-	if req.Msg.Date.AsTime().Before(time.Now()) {
-		return nil, connect.NewError(connect.CodeInternal, errors.New("Date cannot be in the past"))
+	now := time.Now()
+	todayMidnight := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
+
+	requestDate := req.Msg.Date.AsTime()
+	requestDateMidnight := time.Date(requestDate.Year(), requestDate.Month(), requestDate.Day(), 0, 0, 0, 0, requestDate.Location())
+
+	if requestDateMidnight.Before(todayMidnight) {
+		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("date cannot be in the past"))
 	}
 
 	user, err := s.Storage.CreateUser(ctx, &pb.User{
