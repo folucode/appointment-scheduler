@@ -1,0 +1,6 @@
+ALTER TABLE appointments
+DROP COLUMN IF EXISTS created_at,
+DROP COLUMN IF EXISTS updated_at;
+
+ALTER TABLE appointments
+DROP CONSTRAINT IF EXISTS fk_user;
