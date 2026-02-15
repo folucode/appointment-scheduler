@@ -48,6 +48,8 @@ func (s *AppointmentServer) CreateAppointment(
 
 	newAppt := &pb.Appointment{
 		Id:          uuid.NewString(),
+		Title:       req.Msg.Title,
+		Date:        req.Msg.Date,
 		Description: req.Msg.Description,
 		UserId:      user.Id,
 		ContactInformation: &pb.ContactInformation{
