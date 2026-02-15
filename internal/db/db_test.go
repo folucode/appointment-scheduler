@@ -142,3 +142,70 @@ func TestAppointmentOverlap(t *testing.T) {
 		assert.Contains(t, err.Error(), "conflict")
 	})
 }
+
+func TestCreateAppointment(t *testing.T) {
+	db := createTestDB(t)
+	ctx := context.Background()
+
+	user, err := db.CreateUser(ctx, &pb.User{
+		Id:    uuid.NewString(),
+		Name:  "Test user",
+		Email: "test@user.com",
+	})
+
+	require.NoError(t, err)
+
+	t.Run("returns a created Appointment", func(t *testing.T) {
+		appt1 := &pb.Appointment{
+			Id:          uuid.NewString(),
+			UserId:      user.Id,
+			Title:       "Test title",
+			Description: "Test description",
+			Date:        timestamppb.Now(),
+			ContactInformation: &pb.ContactInformation{
+				Name:  "Test",
+				Email: "test@example.com",
+			},
+			StartTime: timestamppb.New(time.Now()),
+			EndTime:   timestamppb.New(time.Now().Add(time.Hour)),
+		}
+		err := db.CreateAppointment(ctx, appt1)
+		assert.NoError(t, err)
+	})
+}
+func TestDeleteAppointment(t *testing.T) {
+	db := createTestDB(t)
+	ctx := context.Background()
+
+	user, err := db.CreateUser(ctx, &pb.User{
+		Id:    uuid.NewString(),
+		Name:  "Test user",
+		Email: "test@user.com",
+	})
+
+	require.NoError(t, err)
+
+	t.Run("returns the number of deleted rows", func(t *testing.T) {
+		appt := &pb.Appointment{
+			Id:          uuid.NewString(),
+			UserId:      user.Id,
+			Title:       "Test title",
+			Description: "Test description",
+			Date:        timestamppb.Now(),
+			ContactInformation: &pb.ContactInformation{
+				Name:  "Test",
+				Email: "test@example.com",
+			},
+			StartTime: timestamppb.New(time.Now()),
+			EndTime:   timestamppb.New(time.Now().Add(time.Hour)),
+		}
+		err := db.CreateAppointment(ctx, appt)
+		assert.NoError(t, err)
+
+		deleteCount, delErr := db.DeleteAppointment(ctx, appt.Id)
+		assert.NoError(t, delErr)
+
+		assert.Equal(t, deleteCount, true)
+
+	})
+}
